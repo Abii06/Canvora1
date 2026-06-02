@@ -108,6 +108,77 @@ const deleteProduct = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc    Add review
+// @route   POST /api/products/:id/reviews
+// @access  Private
+const addReview = asyncHandler(async (req, res) => {
+    const { rating, comment } = req.body;
+
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+        res.status(404);
+        throw new Error('Product not found');
+    }
+
+    const review = {
+        user: req.user._id,
+        rating: Number(rating),
+        comment,
+    };
+
+    product.reviews.push(review);
+
+    await product.save();
+
+    res.status(201).json(product.reviews);
+});
+
+// @desc    Get reviews
+// @route   GET /api/products/:id/reviews
+// @access  Public
+const getReviews = asyncHandler(async (req, res) => {
+    const product = await Product.findById(req.params.id)
+        .populate('reviews.user', 'name');
+
+    if (!product) {
+        res.status(404);
+        throw new Error('Product not found');
+    }
+
+    res.json(product.reviews);
+});
+
+// @desc    Delete review
+// @route   DELETE /api/products/:productId/reviews/:reviewId
+// @access  Private
+const deleteReview = asyncHandler(async (req, res) => {
+    const product = await Product.findById(req.params.productId);
+
+    if (!product) {
+        res.status(404);
+        throw new Error('Product not found');
+    }
+
+    const review = product.reviews.id(req.params.reviewId);
+
+    if (!review) {
+        res.status(404);
+        throw new Error('Review not found');
+    }
+
+    if (review.user.toString() !== req.user._id.toString()) {
+        res.status(401);
+        throw new Error('Not authorized');
+    }
+
+    review.deleteOne();
+
+    await product.save();
+
+    res.json({ message: 'Review removed' });
+});
+
 module.exports = {
     getProducts,
     getProductById,
@@ -115,4 +186,7 @@ module.exports = {
     getMyProducts,
     updateProduct,
     deleteProduct,
+    addReview,
+    getReviews,
+    deleteReview,
 };
