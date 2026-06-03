@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import * as api from '../api';
 import { useEffect } from 'react';
 
-
+import ProtectedRoute from '../components/ProtectedRoute';
 
 const Marketplace = () => {
     const [activeCategory, setActiveCategory] = useState('All');
@@ -28,7 +28,8 @@ const Marketplace = () => {
         loadProducts();
     }, []);
 
-    const categories = ['All', 'Painting', 'Abstract', 'Digital Art', 'Photography', 'Sculpture', 'Mixed Media'];
+    const categories = ['All', 'Painting', 'Abstract', 'Digital Art', 
+        'Photography', 'Sculpture', 'Mixed Media'];
 
     const handleWishlistToggle = (e, product) => {
         e.preventDefault(); // Prevent Link navigation
@@ -84,6 +85,8 @@ const Marketplace = () => {
                 </div>
 
                 {/* Grid */}
+        <>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                     {products
                         .filter(p => !user || p.artist?._id !== user._id)
@@ -169,6 +172,7 @@ const Marketplace = () => {
                             );
                         })}
                 </div>
+        </>
             </div>
         </div>
     );

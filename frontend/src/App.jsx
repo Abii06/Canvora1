@@ -47,9 +47,9 @@ function App() {
 
                         {/* Protected Routes */}
                         <Route path="/collections" element={
-                            <ProtectedRoute>
+                            <>
                                 <Marketplace />
-                            </ProtectedRoute>
+                            </>
                         } />
                         <Route path="/product/:id" element={
                             <ProtectedRoute>
