@@ -13,6 +13,7 @@ const Requests = lazy(() => import('./pages/Requests'));
 const Upload = lazy(() => import('./pages/Upload'));
 const MyArtworks = lazy(() => import('./pages/MyArtworks'));
 const Profile = lazy(() => import('./pages/Profile'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -82,6 +83,9 @@ function App() {
                                 <Profile />
                             </ProtectedRoute>
                         } />
+
+                        <Route path="*" element={<NotFound />} />
+                        
                     </Routes>
                 </Suspense>
             </main>
