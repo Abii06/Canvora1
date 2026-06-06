@@ -1,3 +1,6 @@
+const User = require('../models/User');
+const sendEmail = require('../utils/sendEmail');
+
 const asyncHandler = require('express-async-handler');
 const Request = require('../models/Request');
 
@@ -21,6 +24,19 @@ const createRequest = asyncHandler(async (req, res) => {
     });
 
     const createdRequest = await request.save();
+    const artist = await User.findById(artistId);
+
+if (artist) {
+    await sendEmail(
+        artist.email,
+        'New Request Received',
+        `You have received a new request on Canvora.
+
+Price Offered: ${price}
+
+Please login to review it.`
+    );
+}
     res.status(201).json(createdRequest);
 });
 
@@ -49,6 +65,15 @@ const updateRequestStatus = asyncHandler(async (req, res) => {
 
         request.status = req.body.status || request.status;
         const updatedRequest = await request.save();
+        const requester = await User.findById(request.requester);
+
+if (requester) {
+    await sendEmail(
+        requester.email,
+        'Request Status Updated',
+        `Your request status has been updated to: ${request.status}`
+    );
+}
         res.json(updatedRequest);
     } else {
         res.status(404);

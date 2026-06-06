@@ -1,3 +1,4 @@
+const sendEmail = require('../utils/sendEmail');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Profile = require('../models/Profile');
@@ -42,6 +43,18 @@ const registerUser = asyncHandler(async (req, res) => {
         // Create an empty profile and wishlist for the new user
         await Profile.create({ user: user._id });
         await Wishlist.create({ user: user._id });
+
+        await sendEmail(
+    user.email,
+    'Welcome to Canvora',
+    `Hi ${user.name},
+
+Welcome to Canvora!
+
+Your account has been created successfully.
+
+Thank you for joining Canvora.`
+);
 
         res.status(201).json({
             _id: user.id,
