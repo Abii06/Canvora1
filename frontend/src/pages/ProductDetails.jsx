@@ -113,8 +113,8 @@ const ProductDetails = () => {
                         animate={{ opacity: 1, x: 0 }}
                         className="space-y-4"
                     >
-                        <div className="aspect-[4/5] bg-surface rounded-2xl overflow-hidden border border-white/5 relative group">
-                            <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center overflow-hidden">
+                        <div className="aspect-4/5 bg-surface rounded-2xl overflow-hidden border border-white/5 relative group">
+                            <div className="w-full h-full bg-linear-to-br from-gray-800 to-gray-900 flex items-center justify-center overflow-hidden">
                                 {product.images && product.images.length > 0 ? (
                                     <img src={product.images[activeImageIndex]} alt={product.title} className="w-full h-full object-cover transition-all duration-500" />
                                 ) : (
@@ -177,7 +177,7 @@ const ProductDetails = () => {
 
                             <div className="flex items-center gap-4 mb-8">
                                 <div className="flex items-center gap-2">
-                                    <div className="h-10 w-10 bg-gradient-to-tr from-purple-500 to-pink-500 rounded-full" />
+                                    <div className="h-10 w-10 bg-linear-to-tr from-purple-500 to-pink-500 rounded-full" />
                                     <div>
                                         <p className="text-xs text-gray-400">Owner</p>
                                         <span className="font-semibold text-white transition-colors">{product.artist?.name || 'Unknown User'}</span>
@@ -240,7 +240,7 @@ const ProductDetails = () => {
 
             {/* Confirmation Modal */}
             {showConfirm && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+                <div className="fixed inset-0 z-100 flex items-center justify-center px-4">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowConfirm(false)} />
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}

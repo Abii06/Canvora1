@@ -26,11 +26,14 @@ const Auth = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            
             if (isLogin) {
                 await login(formData, navigate);
                 showToast("Welcome back!", "success");
+
             } else {
                 await register(formData, navigate);
+            
                 showToast("Account created successfully!", "success");
             }
         } catch (error) {
