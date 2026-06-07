@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Heart, Share2, ShoppingBag, ArrowLeft, Mail } from 'lucide-react';
@@ -7,7 +7,6 @@ import { useRequests } from '../context/RequestContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import * as api from '../api';
-import { useEffect } from 'react';
 
 const ProductDetails = () => {
     const { id } = useParams();
@@ -22,13 +21,22 @@ const ProductDetails = () => {
     const [loading, setLoading] = useState(true);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
 
+    // Reviews
+    const [reviews, setReviews] = useState([]);
+    const [rating, setRating] = useState(0);
+    const [comment, setComment] = useState('');
+
     useEffect(() => {
         const loadProduct = async () => {
             try {
                 const { data } = await api.fetchProduct(id);
                 setProduct(data);
+
+                const reviewResponse = await api.fetchReviews(id);
+                setReviews(reviewResponse.data);
+
                 setLoading(false);
-            } catch (error) {
+            }catch (error) {
                 console.error("Failed to fetch product", error);
                 setLoading(false);
             }
@@ -97,6 +105,24 @@ const ProductDetails = () => {
                 console.error("Error sharing:", error);
             }
         }
+    };
+
+    const handleReviewSubmit = async () => {
+    try {
+        const { data } = await api.addReview(id, {
+            rating,
+            comment,
+        });
+
+        setReviews(data);
+        setRating(0);
+        setComment('');
+
+        showToast('Review added successfully!', 'success');
+    } catch (error) {
+        console.error(error);
+        showToast('Failed to add review', 'error');
+    }
     };
 
     return (
@@ -202,6 +228,62 @@ const ProductDetails = () => {
                                     {product.description}
                                 </p>
                             </div>
+                            <div className="bg-surface/50 border border-white/5 rounded-2xl p-6 mb-8">
+    <h3 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 mb-4">
+        Reviews & Ratings
+    </h3>
+
+    <div className="flex gap-2 mb-4">
+        {[1, 2, 3, 4, 5].map((star) => (
+            <button
+                key={star}
+                onClick={() => setRating(star)}
+                className={`text-3xl ${
+                    rating >= star
+                        ? 'text-yellow-400'
+                        : 'text-gray-500'
+                }`}
+            >
+                ★
+            </button>
+        ))}
+    </div>
+
+    <textarea
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        placeholder="Write your review..."
+        className="w-full p-3 rounded-lg bg-black/20 border border-white/10 mb-4"
+    />
+
+    <button
+        onClick={handleReviewSubmit}
+        className="bg-primary px-5 py-2 rounded-lg text-white font-semibold"
+    >
+        Submit Review
+    </button>
+
+    <div className="mt-6 space-y-4">
+        {reviews.map((review) => (
+            <div
+                key={review._id}
+                className="border border-white/10 rounded-xl p-4"
+            >
+                <p className="font-semibold text-white">
+                    {review.user?.name || 'User'}
+                </p>
+
+                <p className="text-yellow-400">
+                    {'★'.repeat(review.rating)}
+                </p>
+
+                <p className="text-gray-300 mt-2">
+                    {review.comment}
+                </p>
+            </div>
+        ))}
+    </div>
+</div>
                         </div>
 
                         <div className="mt-8">

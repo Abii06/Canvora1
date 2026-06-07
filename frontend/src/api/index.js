@@ -47,6 +47,15 @@ export const fetchMyArtworks = () => API.get('/products/myartworks');
 export const updateProduct = (id, updatedProduct) => API.put(`/products/${id}`, updatedProduct);
 export const deleteProduct = (id) => API.delete(`/products/${id}`);
 
+export const fetchReviews = (id) =>
+    API.get(`/products/${id}/reviews`);
+
+export const addReview = (id, review) =>
+    API.post(`/products/${id}/reviews`, review);
+
+export const deleteReview = (productId, reviewId) =>
+    API.delete(`/products/${productId}/reviews/${reviewId}`);
+
 // Requests
 export const fetchRequests = () => API.get('/requests/myrequests');
 export const createRequest = (newRequest) => API.post('/requests', newRequest);
