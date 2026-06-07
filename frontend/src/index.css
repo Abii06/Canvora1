@@ -4,9 +4,18 @@
 
 @layer base {
     body {
-        @apply bg-background text-text overflow-x-hidden min-h-screen;
-        background-image: linear-gradient(to bottom right, #0f172a, #1e1b4b, #312e81);
+        @apply overflow-x-hidden min-h-screen transition-colors duration-300;
         background-attachment: fixed;
+    }
+
+    body.light {
+        @apply bg-white text-black;
+        background-image: linear-gradient(to bottom right, #ffffff, #dbeafe, #c7d2fe);
+    }
+
+    body.dark {
+        @apply text-white;
+        background-image: linear-gradient(to bottom right, #0f172a, #1e1b4b, #312e81);
     }
 }
 
