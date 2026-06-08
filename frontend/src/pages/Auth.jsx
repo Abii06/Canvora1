@@ -9,6 +9,7 @@ const Auth = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+    const [passwordStrength, setPasswordStrength] = useState({ percent: 0, label: '', color: 'bg-red-500' });
     const { login, register, isAuthenticated } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
@@ -19,21 +20,55 @@ const Auth = () => {
         }
     }, [isAuthenticated, navigate]);
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+    const calculatePasswordStrength = (password) => {
+        let score = 0;
+        if (!password) return { percent: 0, label: '', color: 'bg-red-500' };
+
+        if (password.length >= 8) score += 1;
+        if (password.length >= 12) score += 1;
+        if (/[A-Z]/.test(password)) score += 1;
+        if (/[0-9]/.test(password)) score += 1;
+        if (/[^A-Za-z0-9]/.test(password)) score += 1;
+
+        const percent = Math.min(100, (score / 5) * 100);
+
+        let label = 'Weak';
+        let color = 'bg-red-500';
+        if (percent >= 80) {
+            label = 'Strong';
+            color = 'bg-green-400';
+        } else if (percent >= 40) {
+            label = 'Medium';
+            color = 'bg-yellow-400';
+        }
+
+        return { percent, label, color };
     };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+
+        // updates password strength only during registration (not on login)
+        if (name === 'password' && !isLogin) {
+            setPasswordStrength(calculatePasswordStrength(value));
+        }
+    };
+
+    React.useEffect(() => {
+        if (isLogin) {
+            setPasswordStrength({ percent: 0, label: '', color: 'bg-red-500' });
+        }
+    }, [isLogin]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            
             if (isLogin) {
                 await login(formData, navigate);
                 showToast("Welcome back!", "success");
-
             } else {
                 await register(formData, navigate);
-            
                 showToast("Account created successfully!", "success");
             }
         } catch (error) {
@@ -166,6 +201,23 @@ const Auth = () => {
                             <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all peer-focus:w-full" />
                         </div>
 
+                        {!isLogin && (
+                            <div className="mt-4">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm text-gray-400">Password strength</span>
+                                    <span className="text-sm font-black text-white uppercase tracking-wide">
+                                        {passwordStrength.label || 'Too short'}
+                                    </span>
+                                </div>
+                                <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                                    <div
+                                        className={`${passwordStrength.color} h-full transition-all`}
+                                        style={{ width: `${passwordStrength.percent}%` }}
+                                        aria-hidden="true"
+                                    />
+                                </div>
+                            </div>
+                        )}
                         <button className="relative w-full group overflow-hidden rounded-full py-5 bg-white text-black font-black uppercase tracking-[0.2em] text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_20px_50px_-10px_rgba(255,255,255,0.2)]">
                             <span className="relative z-10 flex items-center justify-center gap-3">
                                 {isLogin ? 'Log In' : 'Get Started'}
