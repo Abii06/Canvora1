@@ -16,9 +16,38 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Database Connection
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.log(err));
+if (!process.env.MONGO_URI) {
+    console.error('====================================================================');
+    console.error('⚠️  CRITICAL ERROR: MONGO_URI is not defined in backend/.env!');
+    console.error('Please configure your database connection string in your .env file.');
+    console.error('Example: MONGO_URI=mongodb://127.0.0.1:27017/canvora');
+    console.error('====================================================================');
+} else {
+    mongoose.connect(process.env.MONGO_URI, {
+        serverSelectionTimeoutMS: 5000 // Fail fast if MongoDB is not running
+    })
+        .then(() => console.log('✅ MongoDB Connected successfully!'))
+        .catch(err => {
+            console.error('====================================================================');
+            console.error('❌ MongoDB Connection Failed!');
+            console.error('Error details:', err.message);
+            console.error('\nPlease verify that:');
+            console.error('1. Your MongoDB server is running (locally or on Atlas).');
+            console.error('2. The connection string in backend/.env is correct.');
+            console.error('====================================================================');
+        });
+}
+
+// Database Connection Status Check Middleware
+app.use((req, res, next) => {
+    // readyState: 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+    if (mongoose.connection.readyState !== 1 && mongoose.connection.readyState !== 2) {
+        return res.status(503).json({
+            message: 'Database connection is not established. Please check backend/.env and ensure your MongoDB database is running.'
+        });
+    }
+    next();
+});
 
 // Routes
 const authRoutes = require('./routes/auth');

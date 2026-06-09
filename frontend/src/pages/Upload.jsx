@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Upload as UploadIcon, Image as ImageIcon, X, Plus } from 'lucide-react';
+import { Upload as UploadIcon, Image as ImageIcon, X, Plus, AlertCircle } from 'lucide-react';
 import * as api from '../api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
+import SoftAuthModal from '../components/SoftAuthModal';
 
 const Upload = () => {
     const [dragActive, setDragActive] = useState(false);
@@ -20,6 +22,10 @@ const Upload = () => {
     const [loading, setLoading] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editId, setEditId] = useState(null);
+
+    const { isAuthenticated } = useAuth();
+    const [showSoftAuth, setShowSoftAuth] = useState(false);
+    const [softAuthMessage, setSoftAuthMessage] = useState('');
 
     const categories = ['Painting', 'Abstract', 'Digital', 'Photography', 'Sculpture', 'Mixed Media'];
     const availabilityOptions = [1, 2, 3, 4, 5, 'Other'];
@@ -96,6 +102,11 @@ const Upload = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!isAuthenticated) {
+            setSoftAuthMessage("Sign in to upload and publish your artwork.");
+            setShowSoftAuth(true);
+            return;
+        }
         setLoading(true);
 
         const productData = {
@@ -129,6 +140,21 @@ const Upload = () => {
                 <h1 className="text-4xl font-bold mb-2">{isEditing ? 'Edit Your Artwork' : 'Upload Your Artwork'}</h1>
                 <p className="text-gray-400">Share your masterpiece with collectors worldwide</p>
             </div>
+
+            {/* Guest Callout Banner */}
+            {!isAuthenticated && (
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="max-w-2xl mx-auto mb-8 p-5 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-2xl flex items-center gap-4 backdrop-blur-xl"
+                >
+                    <AlertCircle className="h-6 w-6 flex-shrink-0" />
+                    <div className="text-left">
+                        <h4 className="font-bold text-white">Creator Studio Preview</h4>
+                        <p className="text-sm text-gray-400 font-medium">You are free to try the form, but you must sign in to submit and publish artwork.</p>
+                    </div>
+                </motion.div>
+            )}
 
             <div className="max-w-2xl mx-auto bg-surface/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
                 <form onSubmit={handleSubmit}>
@@ -295,6 +321,14 @@ const Upload = () => {
                     </button>
                 </form>
             </div>
+
+            {/* Soft Auth Modal */}
+            <SoftAuthModal
+                isOpen={showSoftAuth}
+                onClose={() => setShowSoftAuth(false)}
+                message={softAuthMessage}
+                redirectPath="/upload"
+            />
         </div>
     );
 };

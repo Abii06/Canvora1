@@ -1,17 +1,70 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Clock, X, ArrowUpRight, ArrowDownLeft, Send } from 'lucide-react';
+import { Check, Clock, X, ArrowUpRight, ArrowDownLeft, Send, ArrowRight, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useRequests } from '../context/RequestContext';
 import * as api from '../api';
+import { useAuth } from '../context/AuthContext';
+import SoftAuthModal from '../components/SoftAuthModal';
+
+const mockIncomingRequests = [
+    {
+        _id: "mock-inc-1",
+        product: {
+            title: "Cosmic Resonance",
+            images: ["https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=600&auto=format&fit=crop"]
+        },
+        requester: { name: "Alice Vance" },
+        price: "35,000",
+        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        status: "pending"
+    },
+    {
+        _id: "mock-inc-2",
+        product: {
+            title: "Surreal Mindscape",
+            images: ["https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop"]
+        },
+        requester: { name: "David Sterling" },
+        price: "82,000",
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        status: "accepted"
+    }
+];
+
+const mockOutgoingRequests = [
+    {
+        _id: "mock-out-1",
+        product: {
+            title: "Absolute Zero",
+            images: ["https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=600&auto=format&fit=crop"]
+        },
+        artist: { name: "Sophia Reynolds" },
+        price: "60,000",
+        createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+        status: "pending"
+    }
+];
 
 const Requests = () => {
     const [activeTab, setActiveTab] = useState('incoming');
     const [showConfirm, setShowConfirm] = useState(false);
     const [requestToCancel, setRequestToCancel] = useState(null);
     const { incomingRequests, outgoingRequests, fetchUserRequests } = useRequests();
+    const { isAuthenticated } = useAuth();
+    
+    const [showSoftAuth, setShowSoftAuth] = useState(false);
+    const [softAuthMessage, setSoftAuthMessage] = useState('');
+
+    const incomingList = isAuthenticated ? incomingRequests : mockIncomingRequests;
+    const outgoingList = isAuthenticated ? outgoingRequests : mockOutgoingRequests;
 
     const handleUpdateStatus = async (id, status) => {
+        if (!isAuthenticated) {
+            setSoftAuthMessage("Sign in to accept or decline purchase requests.");
+            setShowSoftAuth(true);
+            return;
+        }
         try {
             await api.updateRequestStatus(id, status);
             fetchUserRequests();
@@ -21,6 +74,11 @@ const Requests = () => {
     };
 
     const handleCancelRequest = (id) => {
+        if (!isAuthenticated) {
+            setSoftAuthMessage("Sign in to manage your outgoing requests.");
+            setShowSoftAuth(true);
+            return;
+        }
         setRequestToCancel(id);
         setShowConfirm(true);
     };
@@ -54,7 +112,7 @@ const Requests = () => {
                                 : 'text-gray-400 hover:text-white'
                                 }`}
                         >
-                            Incoming <span className="ml-2 bg-white/20 px-1.5 py-0.5 rounded text-xs">{incomingRequests.length}</span>
+                            Incoming <span className="ml-2 bg-white/20 px-1.5 py-0.5 rounded text-xs">{incomingList.length}</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('outgoing')}
@@ -63,17 +121,43 @@ const Requests = () => {
                                 : 'text-gray-400 hover:text-white'
                                 }`}
                         >
-                            Outgoing <span className="ml-2 bg-white/20 px-1.5 py-0.5 rounded text-xs">{outgoingRequests.length}</span>
+                            Outgoing <span className="ml-2 bg-white/20 px-1.5 py-0.5 rounded text-xs">{outgoingList.length}</span>
                         </button>
                     </div>
                 </div>
 
+                {/* Guest Callout Banner */}
+                {!isAuthenticated && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-8 p-6 bg-gradient-to-r from-primary/20 via-surface/80 to-secondary/20 border border-white/10 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 backdrop-blur-xl"
+                    >
+                        <div className="flex items-center gap-4 text-left">
+                            <div className="p-3 bg-white/5 rounded-2xl border border-white/10 text-primary">
+                                <ShoppingBag className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-white">Manage your purchase requests</h3>
+                                <p className="text-sm text-gray-400">Sign in to buy art, manage your sales, and coordinate with collectors.</p>
+                            </div>
+                        </div>
+                        <Link
+                            to="/auth"
+                            state={{ from: "/requests" }}
+                            className="bg-white hover:bg-gray-100 text-black px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all transform hover:scale-105 active:scale-95 whitespace-nowrap"
+                        >
+                            Sign In / Create Account <ArrowRight className="h-4 w-4" />
+                        </Link>
+                    </motion.div>
+                )}
+
                 <div className="space-y-4">
                     {activeTab === 'incoming' ? (
                         <>
-                            {incomingRequests.length === 0 ? (
+                            {incomingList.length === 0 ? (
                                 <div className="text-center py-12 text-gray-500">No incoming requests yet.</div>
-                            ) : incomingRequests.map((req) => (
+                            ) : incomingList.map((req) => (
                                 <motion.div
                                     key={req._id}
                                     initial={{ opacity: 0, y: 10 }}
@@ -108,22 +192,20 @@ const Requests = () => {
                                         <div className="flex gap-2">
                                             {req.status === 'pending' ? (
                                                 <>
-                                                    <>
-                                                        <button
-                                                            onClick={() => handleUpdateStatus(req._id, 'accepted')}
-                                                            className="p-2 bg-green-500/20 hover:bg-green-500/30 text-green-500 rounded-lg border border-green-500/50 transition-colors"
-                                                            title="Accept"
-                                                        >
-                                                            <Check className="h-5 w-5" />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleUpdateStatus(req._id, 'rejected')}
-                                                            className="p-2 bg-red-500/20 hover:bg-red-500/30 text-red-500 rounded-lg border border-red-500/50 transition-colors"
-                                                            title="Decline"
-                                                        >
-                                                            <X className="h-5 w-5" />
-                                                        </button>
-                                                    </>
+                                                    <button
+                                                        onClick={() => handleUpdateStatus(req._id, 'accepted')}
+                                                        className="p-2 bg-green-500/20 hover:bg-green-500/30 text-green-500 rounded-lg border border-green-500/50 transition-colors"
+                                                        title="Accept"
+                                                    >
+                                                        <Check className="h-5 w-5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdateStatus(req._id, 'rejected')}
+                                                        className="p-2 bg-red-500/20 hover:bg-red-500/30 text-red-500 rounded-lg border border-red-500/50 transition-colors"
+                                                        title="Decline"
+                                                    >
+                                                        <X className="h-5 w-5" />
+                                                    </button>
                                                 </>
                                             ) : (
                                                 <span className={`px-3 py-1 rounded-full text-xs font-medium border ${req.status === 'accepted' ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-red-500/10 border-red-500/20 text-red-500'
@@ -138,9 +220,9 @@ const Requests = () => {
                         </>
                     ) : (
                         <>
-                            {outgoingRequests.length === 0 ? (
-                                <div className="text-center py-12 text-gray-500">No outgoing requests send.</div>
-                            ) : outgoingRequests.map((req) => (
+                            {outgoingList.length === 0 ? (
+                                <div className="text-center py-12 text-gray-500">No outgoing requests sent.</div>
+                            ) : outgoingList.map((req) => (
                                 <motion.div
                                     key={req._id}
                                     initial={{ opacity: 0, y: 10 }}
@@ -225,7 +307,7 @@ const Requests = () => {
                             </button>
                             <button
                                 onClick={confirmCancel}
-                                className="flex-1 py-3 px-6 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors"
+                                className="flex-1 py-3 px-6 bg-red-500 hover:bg-red-650 text-white font-bold rounded-xl transition-colors"
                             >
                                 Yes, Cancel
                             </button>
@@ -233,6 +315,14 @@ const Requests = () => {
                     </motion.div>
                 </div>
             )}
+
+            {/* Soft Auth Modal */}
+            <SoftAuthModal
+                isOpen={showSoftAuth}
+                onClose={() => setShowSoftAuth(false)}
+                message={softAuthMessage}
+                redirectPath="/requests"
+            />
         </div>
     );
 };

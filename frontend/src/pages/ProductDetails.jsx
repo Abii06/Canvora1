@@ -36,7 +36,7 @@ const ProductDetails = () => {
                 setReviews(reviewResponse.data);
 
                 setLoading(false);
-            }catch (error) {
+            } catch (error) {
                 console.error("Failed to fetch product", error);
                 setLoading(false);
             }
@@ -108,21 +108,21 @@ const ProductDetails = () => {
     };
 
     const handleReviewSubmit = async () => {
-    try {
-        const { data } = await api.addReview(id, {
-            rating,
-            comment,
-        });
+        try {
+            const { data } = await api.addReview(id, {
+                rating,
+                comment,
+            });
 
-        setReviews(data);
-        setRating(0);
-        setComment('');
+            setReviews(data);
+            setRating(0);
+            setComment('');
 
-        showToast('Review added successfully!', 'success');
-    } catch (error) {
-        console.error(error);
-        showToast('Failed to add review', 'error');
-    }
+            showToast('Review added successfully!', 'success');
+        } catch (error) {
+            console.error(error);
+            showToast('Failed to add review', 'error');
+        }
     };
 
     return (
@@ -189,8 +189,8 @@ const ProductDetails = () => {
                                         initial={{ opacity: 0, scale: 0.9 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md border flex items-center gap-1.5 ml-2 ${remainingCopies <= 3
-                                                ? 'bg-amber-500/20 border-amber-500/30 text-amber-500 animate-pulse'
-                                                : 'bg-white/5 border-white/10 text-gray-300'
+                                            ? 'bg-amber-500/20 border-amber-500/30 text-amber-500 animate-pulse'
+                                            : 'bg-white/5 border-white/10 text-gray-300'
                                             }`}
                                     >
                                         <div className={`h-1.5 w-1.5 rounded-full ${remainingCopies <= 3 ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]' : 'bg-gray-500'}`} />
@@ -229,61 +229,60 @@ const ProductDetails = () => {
                                 </p>
                             </div>
                             <div className="bg-surface/50 border border-white/5 rounded-2xl p-6 mb-8">
-    <h3 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 mb-4">
-        Reviews & Ratings
-    </h3>
+                                <h3 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 mb-4">
+                                    Reviews & Ratings
+                                </h3>
 
-    <div className="flex gap-2 mb-4">
-        {[1, 2, 3, 4, 5].map((star) => (
-            <button
-                key={star}
-                onClick={() => setRating(star)}
-                className={`text-3xl ${
-                    rating >= star
-                        ? 'text-yellow-400'
-                        : 'text-gray-500'
-                }`}
-            >
-                ★
-            </button>
-        ))}
-    </div>
+                                <div className="flex gap-2 mb-4">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button
+                                            key={star}
+                                            onClick={() => setRating(star)}
+                                            className={`text-3xl ${rating >= star
+                                                    ? 'text-yellow-400'
+                                                    : 'text-gray-500'
+                                                }`}
+                                        >
+                                            ★
+                                        </button>
+                                    ))}
+                                </div>
 
-    <textarea
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-        placeholder="Write your review..."
-        className="w-full p-3 rounded-lg bg-black/20 border border-white/10 mb-4"
-    />
+                                <textarea
+                                    value={comment}
+                                    onChange={(e) => setComment(e.target.value)}
+                                    placeholder="Write your review..."
+                                    className="w-full p-3 rounded-lg bg-black/20 border border-white/10 mb-4"
+                                />
 
-    <button
-        onClick={handleReviewSubmit}
-        className="bg-primary px-5 py-2 rounded-lg text-white font-semibold"
-    >
-        Submit Review
-    </button>
+                                <button
+                                    onClick={handleReviewSubmit}
+                                    className="bg-primary px-5 py-2 rounded-lg text-white font-semibold"
+                                >
+                                    Submit Review
+                                </button>
 
-    <div className="mt-6 space-y-4">
-        {reviews.map((review) => (
-            <div
-                key={review._id}
-                className="border border-white/10 rounded-xl p-4"
-            >
-                <p className="font-semibold text-white">
-                    {review.user?.name || 'User'}
-                </p>
+                                <div className="mt-6 space-y-4">
+                                    {reviews.map((review) => (
+                                        <div
+                                            key={review._id}
+                                            className="border border-white/10 rounded-xl p-4"
+                                        >
+                                            <p className="font-semibold text-white">
+                                                {review.user?.name || 'User'}
+                                            </p>
 
-                <p className="text-yellow-400">
-                    {'★'.repeat(review.rating)}
-                </p>
+                                            <p className="text-yellow-400">
+                                                {'★'.repeat(review.rating)}
+                                            </p>
 
-                <p className="text-gray-300 mt-2">
-                    {review.comment}
-                </p>
-            </div>
-        ))}
-    </div>
-</div>
+                                            <p className="text-gray-300 mt-2">
+                                                {review.comment}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
 
                         <div className="mt-8">

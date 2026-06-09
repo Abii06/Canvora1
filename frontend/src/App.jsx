@@ -45,43 +45,13 @@ function App() {
                         <Route path="/" element={<Home />} />
                         <Route path="/auth" element={<Auth />} />
 
-                        {/* Protected Routes */}
-                        <Route path="/collections" element={
-                            <>
-                                <Marketplace />
-                            </>
-                        } />
-                        <Route path="/product/:id" element={
-                            <ProtectedRoute>
-                                <ProductDetails />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/upload" element={
-                            <ProtectedRoute>
-                                <Upload />
-                            </ProtectedRoute>
-                        } />
-
-                        <Route path="/requests" element={
-                            <ProtectedRoute>
-                                <Requests />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/wishlist" element={
-                            <ProtectedRoute>
-                                <Wishlist />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/myartworks" element={
-                            <ProtectedRoute>
-                                <MyArtworks />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/profile" element={
-                            <ProtectedRoute>
-                                <Profile />
-                            </ProtectedRoute>
-                        } />
+                        <Route path="/collections" element={<Marketplace />} />
+                        <Route path="/product/:id" element={<ProductDetails />} />
+                        <Route path="/upload" element={<Upload />} />
+                        <Route path="/requests" element={<Requests />} />
+                        <Route path="/wishlist" element={<Wishlist />} />
+                        <Route path="/myartworks" element={<MyArtworks />} />
+                        <Route path="/profile" element={<Profile />} />
                     </Routes>
                 </Suspense>
             </main>
