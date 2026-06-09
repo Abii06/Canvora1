@@ -11,20 +11,50 @@ import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
 import * as api from '../api';
+import SoftAuthModal from '../components/SoftAuthModal';
+
+const demoArtworks = [
+    {
+        _id: "demo1",
+        title: "Nebula Dreams",
+        category: "Digital",
+        price: "15,000",
+        copies: 10,
+        images: ["https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop"]
+    },
+    {
+        _id: "demo2",
+        title: "Chiaroscuro Study",
+        category: "Painting",
+        price: "75,000",
+        copies: 1,
+        images: ["https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=600&auto=format&fit=crop"]
+    }
+];
 
 const Profile = () => {
     const { user, logout, updateUser } = useAuth();
+    const { isAuthenticated } = useAuth();
     const { wishlistItems } = useWishlist();
     const { showToast } = useToast();
     const navigate = useNavigate();
 
+    const displayUser = isAuthenticated ? user : {
+        name: "Guest Explorer",
+        email: "guest@canvora.com",
+        bio: "Start exploring Canvora to collect and share premium artwork.",
+        location: "Stargazing from Earth",
+        createdAt: new Date().toISOString(),
+        profileImage: ""
+    };
+
     const [activeTab, setActiveTab] = useState('profile');
     const [isEditing, setIsEditing] = useState(false);
     const [profileData, setProfileData] = useState({
-        name: user?.name || '',
-        location: user?.location || '',
-        bio: user?.bio || '',
-        profileImage: user?.profileImage || ''
+        name: displayUser?.name || '',
+        location: displayUser?.location || '',
+        bio: displayUser?.bio || '',
+        profileImage: displayUser?.profileImage || ''
     });
 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -39,7 +69,16 @@ const Profile = () => {
     const [myArtworks, setMyArtworks] = useState([]);
     const [loadingArt, setLoadingArt] = useState(true);
 
+    const [showSoftAuth, setShowSoftAuth] = useState(false);
+    const [softAuthMessage, setSoftAuthMessage] = useState('');
+
     useEffect(() => {
+        if (!isAuthenticated) {
+            setMyArtworks(demoArtworks);
+            setLoadingArt(false);
+            return;
+        }
+
         const fetchUserData = async () => {
             try {
                 const { data } = await api.getMe();
@@ -58,19 +97,19 @@ const Profile = () => {
         if (activeTab === 'artworks') {
             loadMyArtworks();
         }
-    }, [activeTab]);
+    }, [activeTab, isAuthenticated]);
 
     // Update form data when user context updates
     useEffect(() => {
-        if (user && !isEditing && user.name !== undefined) {
+        if (displayUser && !isEditing && displayUser.name !== undefined) {
             setProfileData({
-                name: user.name || '',
-                location: user.location || '',
-                bio: user.bio || '',
-                profileImage: user.profileImage || ''
+                name: displayUser.name || '',
+                location: displayUser.location || '',
+                bio: displayUser.bio || '',
+                profileImage: displayUser.profileImage || ''
             });
         }
-    }, [user, isEditing]);
+    }, [user, isEditing, isAuthenticated]);
 
     const loadMyArtworks = async () => {
         try {
@@ -86,6 +125,11 @@ const Profile = () => {
 
     const handleProfileUpdate = async (e) => {
         e.preventDefault();
+        if (!isAuthenticated) {
+            setSoftAuthMessage("Sign in to edit your profile and customize your details.");
+            setShowSoftAuth(true);
+            return;
+        }
         try {
             const { data } = await api.updateUserProfile(profileData);
             updateUser(data);
@@ -98,6 +142,11 @@ const Profile = () => {
 
     const handlePasswordChange = async (e) => {
         e.preventDefault();
+        if (!isAuthenticated) {
+            setSoftAuthMessage("Sign in to change your password and manage account security.");
+            setShowSoftAuth(true);
+            return;
+        }
         if (passwordData.newPassword !== passwordData.confirmPassword) {
             showToast("New passwords do not match", "error");
             return;
@@ -133,12 +182,18 @@ const Profile = () => {
     };
 
     const handleLogout = () => {
+        if (!isAuthenticated) return;
         logout();
         navigate('/');
     };
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
+        if (!isAuthenticated) {
+            setSoftAuthMessage("Sign in to upload a profile photo.");
+            setShowSoftAuth(true);
+            return;
+        }
         if (file) {
             const reader = new FileReader();
             reader.onloadend = async () => {
@@ -166,9 +221,57 @@ const Profile = () => {
         }
     };
 
+    const handleArtworkAction = (action, artId) => {
+        if (!isAuthenticated) {
+            if (action === 'view') {
+                setSoftAuthMessage("Sign in to view artwork details.");
+            } else if (action === 'edit') {
+                setSoftAuthMessage("Sign in to edit this artwork.");
+            } else {
+                setSoftAuthMessage("Sign in to delete this artwork.");
+            }
+            setShowSoftAuth(true);
+            return;
+        }
+        
+        if (action === 'view') {
+            navigate(`/product/${artId}`);
+        } else if (action === 'edit') {
+            navigate(`/upload?edit=${artId}`);
+        } else if (action === 'delete') {
+            handleDeleteArtwork(artId);
+        }
+    };
+
     return (
         <div className="min-h-screen pt-24 pb-20 px-4 md:px-8">
             <div className="max-w-6xl mx-auto">
+                {/* Guest Callout Banner */}
+                {!isAuthenticated && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-8 p-6 bg-gradient-to-r from-primary/20 via-surface/80 to-secondary/20 border border-white/10 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 backdrop-blur-xl"
+                    >
+                        <div className="flex items-center gap-4 text-left">
+                            <div className="p-3 bg-white/5 rounded-2xl border border-white/10 text-primary">
+                                <Settings className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-white">Guest Explorer Mode</h3>
+                                <p className="text-sm text-gray-400">Sign in to edit your profile, upload your masterpieces, and secure your transactions.</p>
+                            </div>
+                        </div>
+                        <Link
+                            to="/auth"
+                            state={{ from: "/profile" }}
+                            className="bg-white hover:bg-gray-100 text-black px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all transform hover:scale-105 active:scale-95 whitespace-nowrap"
+                        >
+                            Sign In / Create Account <ArrowRight className="h-4 w-4" />
+                        </Link>
+                    </motion.div>
+                )}
+
                 <div className="flex flex-col md:flex-row gap-8">
                     {/* Sidebar */}
                     <aside className="w-full md:w-80 space-y-4">
@@ -190,8 +293,8 @@ const Profile = () => {
                                         <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                                     </label>
                                 </div>
-                                <h2 className="text-xl font-bold text-white">{user?.name}</h2>
-                                <p className="text-sm text-gray-400 mb-6">{user?.email}</p>
+                                <h2 className="text-xl font-bold text-white">{displayUser?.name}</h2>
+                                <p className="text-sm text-gray-400 mb-6">{displayUser?.email}</p>
 
                                 <div className="w-full space-y-2 text-left">
                                     <button
@@ -216,12 +319,24 @@ const Profile = () => {
 
                                 <div className="w-full h-px bg-white/10 my-4" />
 
-                                <button
-                                    onClick={handleLogout}
-                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-all font-medium"
-                                >
-                                    <LogOut className="h-5 w-5" /> Sign Out
-                                </button>
+                                {isAuthenticated ? (
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-all font-medium"
+                                    >
+                                        <LogOut className="h-5 w-5" /> Sign Out
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => {
+                                            setSoftAuthMessage("Sign in to access creator dashboard.");
+                                            setShowSoftAuth(true);
+                                        }}
+                                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-primary hover:bg-primary/10 transition-all font-medium"
+                                    >
+                                        <Shield className="h-5 w-5" /> Sign In
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -229,7 +344,7 @@ const Profile = () => {
                         <div className="bg-surface/30 backdrop-blur-xl border border-white/10 rounded-3xl p-6 group cursor-pointer" onClick={() => navigate('/wishlist')}>
                             <div className="flex items-center justify-between mb-2">
                                 <Heart className="h-6 w-6 text-red-500" />
-                                <span className="text-2xl font-bold text-white">{wishlistItems.length}</span>
+                                <span className="text-2xl font-bold text-white">{isAuthenticated ? wishlistItems.length : 3}</span>
                             </div>
                             <p className="text-sm text-gray-400">Items in your wishlist</p>
                             <div className="flex items-center gap-2 text-xs text-primary mt-4 group-hover:underline">
@@ -275,14 +390,14 @@ const Profile = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="space-y-2">
+                                             <div className="space-y-2">
                                                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Email Address</label>
                                                 <div className="relative">
                                                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                                                     <input
                                                         type="email"
                                                         disabled={true}
-                                                        value={user?.email}
+                                                        value={displayUser?.email}
                                                         className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white focus:outline-none opacity-50"
                                                     />
                                                 </div>
@@ -318,14 +433,14 @@ const Profile = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="space-y-2">
+                                             <div className="space-y-2">
                                                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Date Joined</label>
                                                 <div className="relative">
                                                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                                                     <input
                                                         type="text"
                                                         disabled={true}
-                                                        value={user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
+                                                        value={displayUser?.createdAt ? new Date(displayUser.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
                                                         className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white focus:outline-none opacity-50"
                                                     />
                                                 </div>
@@ -384,21 +499,21 @@ const Profile = () => {
                                                     </div>
                                                     <div className="flex sm:flex-col gap-2 justify-center">
                                                         <button
-                                                            onClick={() => navigate(`/product/${art._id}`)}
+                                                            onClick={() => handleArtworkAction('view', art._id)}
                                                             className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
                                                             title="View Details"
                                                         >
                                                             <Eye className="h-4 w-4" />
                                                         </button>
                                                         <button
-                                                            onClick={() => navigate(`/upload?edit=${art._id}`)}
+                                                            onClick={() => handleArtworkAction('edit', art._id)}
                                                             className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
                                                             title="Edit Artwork"
                                                         >
                                                             <Edit2 className="h-4 w-4" />
                                                         </button>
                                                         <button
-                                                            onClick={() => handleDeleteArtwork(art._id)}
+                                                            onClick={() => handleArtworkAction('delete', art._id)}
                                                             className="p-2 bg-red-500/10 hover:bg-red-500/20 rounded-lg text-red-500 transition-colors"
                                                             title="Delete Artwork"
                                                         >
@@ -519,7 +634,7 @@ const Profile = () => {
                                 </button>
                                 <button
                                     onClick={confirmDelete}
-                                    className="flex-1 py-3 px-6 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors shadow-lg shadow-red-500/20"
+                                    className="flex-1 py-3 px-6 bg-red-500 hover:bg-red-650 text-white font-bold rounded-xl transition-colors shadow-lg shadow-red-500/20"
                                 >
                                     Yes, Delete
                                 </button>
@@ -528,6 +643,13 @@ const Profile = () => {
                     </div>
                 )}
             </AnimatePresence>
+
+            <SoftAuthModal
+                isOpen={showSoftAuth}
+                onClose={() => setShowSoftAuth(false)}
+                message={softAuthMessage}
+                redirectPath="/profile"
+            />
         </div>
     );
 };

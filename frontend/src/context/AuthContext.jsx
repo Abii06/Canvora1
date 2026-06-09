@@ -14,28 +14,28 @@ export const AuthProvider = ({ children }) => {
 
     const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
 
-    const login = async (formData, navigate) => {
+    const login = async (formData, navigate, redirectPath = '/collections') => {
         try {
             const { data } = await api.login(formData);
             setUser(data);
             setIsAuthenticated(true);
             localStorage.setItem('user', JSON.stringify(data));
             localStorage.setItem('isAuth', 'true');
-            navigate('/collections');
+            navigate(redirectPath);
         } catch (error) {
             console.error(error);
             throw error;
         }
     };
 
-    const register = async (formData, navigate) => {
+    const register = async (formData, navigate, redirectPath = '/collections') => {
         try {
             const { data } = await api.register(formData);
             setUser(data);
             setIsAuthenticated(true);
             localStorage.setItem('user', JSON.stringify(data));
             localStorage.setItem('isAuth', 'true');
-            navigate('/collections');
+            navigate(redirectPath);
         } catch (error) {
             console.error(error);
             throw error;
