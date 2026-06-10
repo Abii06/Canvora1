@@ -36,9 +36,9 @@ function App() {
 
     // Also hide navbar/footer for some other routes if needed, but usually just auth
 
-    return (
-        <div className="min-h-screen bg-background text-text selection:bg-primary selection:text-white flex flex-col">
-            {!isAuthPage && <Navbar />}
+    return (          
+        <div className="min-h-screen bg-transparent text-text selection:bg-primary selection:text-white flex flex-col">
+        {!isAuthPage && <Navbar />}
 
             <main className="flex-grow">
                 <Suspense fallback={<PageLoading />}>

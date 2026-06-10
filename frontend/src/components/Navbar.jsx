@@ -3,30 +3,17 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Palette, ShoppingBag, Menu, X, Heart, LogOut, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-
+import { useTheme } from '../context/ThemeContext';
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [theme, setTheme] = useState(
-    localStorage.getItem('theme') || 'light'
-);
+    const { isDark, toggleTheme } = useTheme();
     const location = useLocation();
     const { isAuthenticated, logout } = useAuth();
     const navigate = useNavigate();
-    useEffect(() => {
-    document.body.classList.remove('light', 'dark');
-    document.body.classList.add(theme);
-
-    localStorage.setItem('theme', theme);
-}, [theme]);
-
     const handleLogout = () => {
     logout();
     navigate('/');
 };
-    const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-};
-
 
     const navLinks = [
         { name: 'Collections', path: '/collections' },
@@ -35,7 +22,8 @@ const Navbar = () => {
     ];
 
     return (
-        <nav className="fixed w-full z-50 bg-white dark:bg-gray-900/80 backdrop-blur-md border-b border-white/5">
+        <nav className={`fixed w-full z-50 backdrop-blur-md border-b border-white/5 ${isDark ? 'bg-gray-900/80' : 'bg-white/80'
+            }`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     <Link to="/" className="flex items-center gap-2 group">
@@ -51,7 +39,9 @@ const Navbar = () => {
                                 <Link
                                     key={item.name}
                                     to={item.path}
-                                    className={`relative px-3 py-2 text-sm font-medium transition-colors duration-200 ${location.pathname === item.path ? 'text-primary' : 'text-gray-300 hover:text-white'
+                                    className={`relative px-3 py-2 text-sm font-medium transition-colors duration-200 ${location.pathname === item.path
+                                            ? 'text-primary'
+                                            : isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
                                         }`}
                                 >
                                     {item.name}
@@ -69,17 +59,18 @@ const Navbar = () => {
     onClick={toggleTheme}
     className="p-2 rounded-full hover:bg-white/10 transition"
 >
-    {theme === 'light' ? (
-        <Moon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-    ) : (
-        <Sun className="h-5 w-5 text-yellow-400" />
-    )}
+
+                        {isDark ? (
+                            <Sun className="h-5 w-5 text-yellow-400" />
+                        ) : (
+                            <Moon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                        )}
 </button>
                     <div className="hidden md:flex items-center gap-4">
                         <Link to="/wishlist" className="p-2 hover:bg-white/5 rounded-full transition-colors relative group">
-                            <Heart className="h-5 w-5 text-gray-700 dark:text-gray-300 group-hover:text-red-500 transition-colors" />
+                            <Heart className={`h-5 w-5 ${isDark ? 'text-gray-300' : 'text-gray-600'} group-hover:text-red-500 transition-colors`} />
                         </Link>
-                        <Link to={isAuthenticated ? "/profile" : "/auth"} className="text-gray-700 dark:text-gray-300 hover:text-white font-medium transition-colors">
+                        <Link to={isAuthenticated ? "/profile" : "/auth"} className={`${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'} font-medium transition-colors`}>
                             {isAuthenticated ? 'My Account' : 'Sign In'}
                         </Link>
                         {isAuthenticated ? (
@@ -99,7 +90,7 @@ const Navbar = () => {
                     <div className="md:hidden flex items-center">
                         <button
                             onClick={() => setIsOpen(!isOpen)}
-                            className="text-gray-700 dark:text-gray-300 hover:text-white p-2"
+                            className={`${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'} p-2`}
                         >
                             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                         </button>
@@ -132,7 +123,7 @@ const Navbar = () => {
     onClick={toggleTheme}
     className="w-full text-center bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-medium"
 >
-    {theme === 'light' ? 'Dark Mode 🌙' : 'Light Mode ☀️'}
+    {isDark ? 'Dark Mode 🌙' : 'Light Mode ☀️'}
 </button>
                                 <Link to={isAuthenticated ? "/profile" : "/auth"} className="w-full text-center text-gray-700 dark:text-gray-300 hover:text-white font-medium">
                                     {isAuthenticated ? 'My Account' : 'Sign In'}
