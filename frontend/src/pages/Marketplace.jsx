@@ -8,23 +8,27 @@ import * as api from '../api';
 import { useEffect } from 'react';
 
 import ProtectedRoute from '../components/ProtectedRoute';
+import SkeletonLoader from '../components/SkeletonLoader';
 
 const Marketplace = () => {
     const [activeCategory, setActiveCategory] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
     const { user } = useAuth();
 
     useEffect(() => {
         const loadProducts = async () => {
-            try {
-                const { data } = await api.fetchProducts();
-                setProducts(data);
-            } catch (error) {
-                console.error('Failed to fetch products', error);
-            }
-        };
+    try {
+        const { data } = await api.fetchProducts();
+        setProducts(data);
+    } catch (error) {
+        console.error('Failed to fetch products', error);
+    } finally {
+        setLoading(false);
+    }
+};
         loadProducts();
     }, []);
 
@@ -86,6 +90,9 @@ const Marketplace = () => {
 
                 {/* Grid */}
         <>
+{loading ? (
+    <SkeletonLoader count={6} />
+) : (
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                     {products
@@ -172,6 +179,7 @@ const Marketplace = () => {
                             );
                         })}
                 </div>
+)}
         </>
             </div>
         </div>
