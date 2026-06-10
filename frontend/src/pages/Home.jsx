@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingBag, Star, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
+import { useTheme } from '../context/ThemeContext';
 const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
@@ -19,8 +19,9 @@ const staggerContainer = {
 };
 
 const Home = () => {
+    const { isDark } = useTheme();
     return (
-        <div className="min-h-screen bg-background text-text">
+        <div className="min-h-screen bg-transparent">
             {/* Avant-Garde Hero Section */}
             <section className="relative min-h-screen flex items-center overflow-hidden pt-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
@@ -32,9 +33,9 @@ const Home = () => {
                             className="lg:col-span-7"
                         >
                             <h1 className="text-7xl md:text-9xl font-black tracking-tighter leading-[0.8] mb-8">
-                                <span className="block text-white">Beyond</span>
+                                <span className={`block ${isDark ? 'text-white' : 'text-gray-900'}`}>Beyond</span>
                                 <span className="block text-primary italic ml-12 md:ml-24">The</span>
-                                <span className="block text-white ml-6 md:ml-12 border-b-8 border-secondary pb-4">Canvas</span>
+                                <span className={`block ${isDark ? 'text-white' : 'text-gray-900'} ml-6 md:ml-12 border-b-8 border-secondary pb-4`}>Canvas</span>
                             </h1>
                             <p className="text-xl md:text-2xl text-gray-400 max-w-lg font-medium leading-relaxed mb-12 ml-6 md:ml-12">
                                 Where standard boundaries dissolve. Experience a curated digital dimension for the avant-garde collector.
@@ -87,7 +88,7 @@ const Home = () => {
                             className="md:w-1/3"
                         >
                             <span className="text-secondary font-black uppercase tracking-[0.4em] text-xs mb-4 block">Manifesto</span>
-                            <h2 className="text-5xl font-black text-white mb-8 leading-tight">
+                            <h2 className={`text-5xl font-black ${isDark ? 'text-white' : 'text-gray-900'} mb-8 leading-tight`}>
                                 Breaking the <br />
                                 <span className="text-primary italic">Static Grid.</span>
                             </h2>
@@ -124,12 +125,26 @@ const Home = () => {
                             <motion.div
                                 key={idx}
                                 whileHover={{ scale: 1.05 }}
-                                className="p-12 bg-white/[0.02] border border-white/5 rounded-[3rem] relative overflow-hidden group"
+                                className={`p-12 border rounded-[3rem] relative overflow-hidden group ${isDark ? 'bg-white/[0.02] border-white/5' : 'bg-white/60 border-black/10 shadow-sm'
+                                    }`}
                             >
                                 <div className={`absolute top-0 right-0 w-24 h-24 ${item.color} opacity-10 blur-3xl group-hover:opacity-40 transition-all`} />
-                                <span className="text-4xl font-black text-white mb-4 block tracking-tighter">{item.title}</span>
-                                <p className="text-gray-400 font-medium">{item.desc}</p>
-                                <div className="mt-8 flex items-center gap-2 text-white/50 font-bold text-xs uppercase tracking-widest group-hover:text-white transition-colors">
+
+                                {/* ✅ title */}
+                                <span className={`text-4xl font-black mb-4 block tracking-tighter ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                    {item.title}
+                                </span>
+
+                                {/* ✅ desc */}
+                                <p className={`font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    {item.desc}
+                                </p>
+
+                                {/* ✅ Discover More */}
+                                <div className={`mt-8 flex items-center gap-2 font-bold text-xs uppercase tracking-widest transition-colors ${isDark
+                                        ? 'text-white/50 group-hover:text-white'
+                                        : 'text-gray-400 group-hover:text-gray-900'
+                                    }`}>
                                     Discover More <ArrowRight className="h-3 w-3" />
                                 </div>
                             </motion.div>

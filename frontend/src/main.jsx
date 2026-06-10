@@ -7,10 +7,12 @@ import { RequestProvider } from './context/RequestContext.jsx'
 import { WishlistProvider } from './context/WishlistContext.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { ToastProvider } from './context/ToastContext.jsx'
+import { ThemeProvider } from './context/ThemeContext.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
         <BrowserRouter>
+        <ThemeProvider>
             <AuthProvider>
                 <ToastProvider>
                     <RequestProvider>
@@ -20,6 +22,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                     </RequestProvider>
                 </ToastProvider>
             </AuthProvider>
+            </ThemeProvider>
         </BrowserRouter>
     </React.StrictMode>,
 )
