@@ -34,7 +34,9 @@ html.dark {
 
 /* GLOBAL APPLY - ye sabse important hai */
 * {
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 @layer base {
@@ -55,7 +57,16 @@ html.dark {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-primary/50 rounded-full hover:bg-primary transition-colors;
+  background-color: var(--primary);
+  opacity: 0.5;
+  border-radius: 9999px;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  opacity: 0.85;
 }
 
 .glass-panel {
@@ -79,4 +90,9 @@ input:-webkit-autofill:focus {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Navbar link hover: ensure good contrast in both light and dark themes */
+.nav-link:hover {
+  color: var(--primary) !important;
 }
