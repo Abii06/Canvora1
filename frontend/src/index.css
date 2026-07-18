@@ -34,7 +34,9 @@ html.dark {
 
 /* GLOBAL APPLY - ye sabse important hai */
 * {
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 @layer base {
@@ -55,12 +57,66 @@ html.dark {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-primary/50 rounded-full hover:bg-primary transition-colors;
+  background-color: rgba(99, 102, 241, 0.5);
+  border-radius: 9999px;
+  transition: background-color 0.3s ease;
 }
 
 .glass-panel {
   background-color: var(--card-bg);
-  @apply backdrop-blur-xl border border-white/10;
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Auth page responsive improvements */
+.auth-card {
+  min-height: 640px;
+}
+
+.auth-left-panel {
+  min-height: 420px;
+}
+
+.auth-form-panel {
+  min-height: 0;
+}
+
+@media (max-width: 1280px) {
+  .auth-card {
+    max-width: 920px;
+  }
+
+  .auth-left-panel {
+    min-height: 340px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .auth-card {
+    max-width: 760px;
+  }
+}
+
+@media (max-width: 900px) {
+  .auth-card {
+    max-width: 620px;
+    border-radius: 1.75rem;
+  }
+
+  .auth-left-panel {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .auth-card {
+    border-radius: 1.25rem;
+    padding: 0;
+  }
+
+  .auth-form-panel {
+    padding: 2rem 1.25rem;
+  }
 }
 
 /* Autofill styling */
